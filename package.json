@@ -1,0 +1,28 @@
+{
+  "name": "botjsx",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test",
+    "release": "node scripts/release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/botjsx/botjsx.git"
+  },
+  "author": "Vitaly Logvinenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/botjsx/botjsx/issues"
+  },
+  "homepage": "https://github.com/botjsx/botjsx#readme",
+  "devDependencies": {
+    "git-url-parse": "^11.1.2",
+    "mocha": "^7.1.2",
+    "shelljs": "^0.8.4"
+  }
+}
