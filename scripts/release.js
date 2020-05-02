@@ -18,7 +18,7 @@ publishUtils.exec('git pull');
 
 // check if the branch exists with the name as in the package.json version field
 const VERSION = packageJson.version;
-const TAG_NAME = 'v' + VERSION;
+const TAG_NAME = VERSION;
 console.log('=> Check if version ' + VERSION + ' is already exists');
 let tagIsExists;
 try {
