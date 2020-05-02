@@ -1,11 +1,15 @@
 {
   "name": "botjsx",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
+  "files": [
+    "LICENSE",
+    "index.js"
+  ],
   "scripts": {
     "test": "mocha test",
     "release": "node scripts/release"
