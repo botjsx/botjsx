@@ -59,4 +59,36 @@ describe('library test', () => {
     assert.ok(Child1.called);
     assert.ok(Child2.called);
   });
+
+  it('useAsync should resolve child component', () => {
+    function testAsync() {
+      return new Promise(resolve => {
+        setTimeout(resolve, 1000);
+      });
+    }
+
+    const Child = sinon.spy();
+
+    const Parent = function({children}) {
+      const resolve = Bot.useAsync();
+      return testAsync().then(() => resolve(children));
+    };
+
+    Bot.run(Bot.createComponent(Parent, null,
+      Bot.createComponent(Child, null))
+    ).then(() => {
+      assert.ok(Child.called);
+    });
+  });
+
+  it('createContext should create context', () => {
+    const Component = function() {
+      const setContext = Bot.createContext();
+      setContext({test: 1});
+    };
+
+    Bot.run(Bot.createComponent(Component, null));
+
+    assert.deepEqual(Bot.useContext(Component), {test: 1});
+  });
 });

@@ -22,28 +22,28 @@ Bot.useContext = function(key) {
   return currentComponent.context.get(key);
 };
 
-Bot.run = function(botComponent) {
-  if (!botComponent) return;
+Bot.run = function(component) {
+  if (!component) return;
   let componentResult;
-  if (typeof(botComponent) === 'function') {
+  if (typeof(component) === 'function') {
     const context = currentComponent.context.get(currentComponent.component);
-    componentResult = botComponent(context);
+    componentResult = component(context);
     return Bot.run(componentResult);
   }
-  if (Array.isArray(botComponent)) {
+  if (Array.isArray(component)) {
     const results = [];
-    for (let i = 0; i < botComponent.length; i++) {
-      if (botComponent[i] === null || botComponent[i] === undefined) continue;
-      const result = Bot.run(botComponent[i]);
+    for (let i = 0; i < component.length; i++) {
+      if (component[i] === null || component[i] === undefined) continue;
+      const result = Bot.run(component[i]);
       results.push(result);
     }
     return results;
   }
-  if (!botComponent.component) return botComponent;
+  if (!component.component) return component;
   const prevComponent = currentComponent;
-  setCurrentComponent(botComponent);
+  setCurrentComponent(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
-  componentResult = botComponent.component(botComponent.props);
+  componentResult = component.component(component.props);
   if (componentResult) {
     return Bot.run(componentResult);
   }
@@ -54,7 +54,6 @@ Bot.createComponent = function(component, props, ...children) {
   if (children.length) {
     props.children = children.length === 1 ? children[0] : children;
   }
-
   return {
     component,
     props,
