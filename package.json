@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "test": "mocha test",
-    "release": "node scripts/release"
+    "release": "npm test && node scripts/release"
   },
   "repository": {
     "type": "git",
