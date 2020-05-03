@@ -41,4 +41,22 @@ describe('library test', () => {
 
     assert.ok(Child.called);
   });
+
+  it('should run array of child components', () => {
+    const Parent = function({children}) {
+      return children;
+    };
+
+    const Child1 = sinon.spy();
+    const Child2 = sinon.spy();
+
+    Bot.run(
+      Bot.createComponent(Parent, null,
+        Bot.createComponent(Child1, null),
+        Bot.createComponent(Child2, null))
+    );
+
+    assert.ok(Child1.called);
+    assert.ok(Child2.called);
+  });
 });
