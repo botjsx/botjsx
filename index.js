@@ -1,10 +1,14 @@
 const Bot = {};
 let currentComponent;
 
+function setCurrentComponent(component) {
+  currentComponent = component;
+}
+
 Bot.useAsync = function() {
   const _currentComponent = currentComponent;
   return component => {
-    currentComponent = _currentComponent;
+    setCurrentComponent(_currentComponent);
     Bot.run(component);
   };
 };
@@ -16,10 +20,6 @@ Bot.createContext = function() {
 
 Bot.useContext = function(key) {
   return currentComponent.context.get(key);
-};
-
-Bot.setCurrentComponent = function(component) {
-  currentComponent = component;
 };
 
 Bot.run = function(botComponent) {
@@ -41,7 +41,7 @@ Bot.run = function(botComponent) {
   }
   if (!botComponent.component) return botComponent;
   const prevComponent = currentComponent;
-  Bot.setCurrentComponent(botComponent);
+  setCurrentComponent(botComponent);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
   componentResult = botComponent.component(botComponent.props);
   if (componentResult) {
