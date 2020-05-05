@@ -1,9 +1,20 @@
+const PropTypes = require('prop-types');
+
 const Bot = {};
 const isComponent = Symbol('isComponent');
 let currentComponent;
 
 function setCurrentComponent(component) {
   currentComponent = component;
+}
+
+function validatePropTypes(component) {
+  const componentFn = component.component;
+  if (!componentFn.propTypes) return;
+  if (component.props) {
+    const componentName = componentFn.name || '';
+    PropTypes.checkPropTypes(componentFn.propTypes, component.props, 'prop', componentName);
+  }
 }
 
 Bot.useAsync = function() {
@@ -43,6 +54,7 @@ Bot.run = function(component) {
   if (!component.component) return component;
   const prevComponent = currentComponent;
   setCurrentComponent(component);
+  validatePropTypes(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
   componentResult = component.component(component.props);
   if (componentResult) return Bot.run(componentResult);

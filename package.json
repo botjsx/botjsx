@@ -1,6 +1,6 @@
 {
   "name": "botjsx",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -29,5 +29,8 @@
     "mocha": "^7.1.2",
     "shelljs": "^0.8.4",
     "sinon": "^9.0.2"
+  },
+  "dependencies": {
+    "prop-types": "^15.7.2"
   }
 }

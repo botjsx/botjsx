@@ -1,5 +1,6 @@
 const assert = require('assert');
 const sinon = require('sinon');
+const PropTypes = require('prop-types');
 const Bot = require('../index');
 
 describe('library test', () => {
@@ -96,5 +97,15 @@ describe('library test', () => {
     const Component = () => 'test';
     const result = Bot.run(Bot.createComponent(Component, null));
     assert.equal(result, 'test');
+  });
+
+  it('validate prop types', () => {
+    sinon.stub(console, 'error');
+    const Component = () => {};
+    Component.propTypes = {
+      someProp: PropTypes.string.isRequired
+    };
+    Bot.run(Bot.createComponent(Component, null));
+    assert.ok(console.error.called);
   });
 });
