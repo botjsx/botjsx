@@ -1,4 +1,5 @@
 const Bot = {};
+const isComponent = Symbol('isComponent');
 let currentComponent;
 
 function setCurrentComponent(component) {
@@ -44,9 +45,7 @@ Bot.run = function(component) {
   setCurrentComponent(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
   componentResult = component.component(component.props);
-  if (componentResult) {
-    return Bot.run(componentResult);
-  }
+  if (componentResult) return Bot.run(componentResult);
 };
 
 Bot.createComponent = function(component, props, ...children) {
@@ -55,6 +54,7 @@ Bot.createComponent = function(component, props, ...children) {
     props.children = children.length === 1 ? children[0] : children;
   }
   return {
+    [isComponent]: true,
     component,
     props,
     context: new Map()

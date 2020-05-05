@@ -91,4 +91,10 @@ describe('library test', () => {
 
     assert.deepEqual(Bot.useContext(Component), {test: 1});
   });
+
+  it('should return component result', () => {
+    const Component = () => 'test';
+    const result = Bot.run(Bot.createComponent(Component, null));
+    assert.equal(result, 'test');
+  });
 });
