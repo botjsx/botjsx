@@ -17,7 +17,25 @@ function validatePropTypes(component) {
   }
 }
 
-Bot.useAsync = function() {
+function runFunction(component) {
+  const context = Bot.useContext(currentComponent.component);
+  return Bot.run(component(context));
+}
+
+function runArray(components) {
+  const results = [];
+  for (let i = 0; i < components.length; i++) {
+    const component = components[i];
+    if (component === null || component === undefined) continue;
+    const result = Bot.run(component);
+    setCurrentComponent(component);
+    results.push(result);
+  }
+  setCurrentComponent(undefined);
+  return results;
+}
+
+Bot.useAsync = Bot.useRun = function() {
   const _currentComponent = currentComponent;
   return component => {
     setCurrentComponent(_currentComponent);
@@ -40,20 +58,10 @@ Bot.useContext = function(key) {
 Bot.run = function(component) {
   let componentResult;
   if (typeof(component) === 'function') {
-    const context = Bot.useContext(currentComponent.component);
-    componentResult = component(context);
-    return Bot.run(componentResult);
+    return runFunction(component);
   }
   if (Array.isArray(component)) {
-    const results = [];
-    for (let i = 0; i < component.length; i++) {
-      if (component[i] === null || component[i] === undefined) continue;
-      const result = Bot.run(component[i]);
-      setCurrentComponent(component[i]);
-      results.push(result);
-    }
-    setCurrentComponent(undefined);
-    return results;
+    return runArray(component);
   }
   if (!component || !component[isComponent]) {
     setCurrentComponent(undefined);
