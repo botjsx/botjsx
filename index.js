@@ -35,7 +35,7 @@ function runArray(components) {
   return results;
 }
 
-Bot.useRun = Bot.useAsync = function() {
+Bot.useRunner = function() {
   const _currentComponent = currentComponent;
   return component => {
     setCurrentComponent(_currentComponent);

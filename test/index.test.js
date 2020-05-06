@@ -61,7 +61,7 @@ describe('library test', () => {
     assert.ok(Child2.called);
   });
 
-  it('useAsync should resolve child component', () => {
+  it('useRunner should run child component', () => {
     function testAsync() {
       return new Promise(resolve => {
         setTimeout(resolve, 1000);
@@ -71,8 +71,8 @@ describe('library test', () => {
     const Child = sinon.spy();
 
     const Parent = function({children}) {
-      const resolve = Bot.useAsync();
-      return testAsync().then(() => resolve(children));
+      const run = Bot.useRunner();
+      return testAsync().then(() => run(children));
     };
 
     Bot.run(Bot.createComponent(Parent, null,
@@ -142,11 +142,11 @@ describe('library test', () => {
         }
 
         const Parent = function ({children}) {
-          const resolve = Bot.useAsync();
+          const run = Bot.useRunner();
           const setContext = Bot.createContext();
           return testAsync().then(() => {
             setContext({parent: true});
-            resolve(children);
+            run(children);
           });
         };
 
@@ -197,11 +197,11 @@ describe('library test', () => {
     assert.ok(console.error.called);
   });
 
-  it('useRun hook should return value', () => {
+  it('useRunner hook should return value', () => {
     const Child = () => 'result';
 
     const Component = ({child}) => {
-      const run = Bot.useRun();
+      const run = Bot.useRunner();
       const result = run(child);
       assert.equal(result, 'result');
     };
