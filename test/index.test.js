@@ -196,4 +196,16 @@ describe('library test', () => {
     Bot.run(Bot.createComponent(Component, null));
     assert.ok(console.error.called);
   });
+
+  it('useRun hook should return value', () => {
+    const Child = () => 'result';
+
+    const Component = ({child}) => {
+      const run = Bot.useRun();
+      const result = run(child);
+      assert.equal(result, 'result');
+    };
+
+    Bot.run(Bot.createComponent(Component, {child: Bot.createComponent(Child, null)}));
+  });
 });

@@ -35,11 +35,11 @@ function runArray(components) {
   return results;
 }
 
-Bot.useAsync = Bot.useRun = function() {
+Bot.useRun = Bot.useAsync = function() {
   const _currentComponent = currentComponent;
   return component => {
     setCurrentComponent(_currentComponent);
-    Bot.run(component);
+    return Bot.run(component);
   };
 };
 
