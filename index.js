@@ -49,8 +49,10 @@ Bot.run = function(component) {
     for (let i = 0; i < component.length; i++) {
       if (component[i] === null || component[i] === undefined) continue;
       const result = Bot.run(component[i]);
+      setCurrentComponent(component[i]);
       results.push(result);
     }
+    setCurrentComponent(undefined);
     return results;
   }
   if (!component || !component[isComponent]) {

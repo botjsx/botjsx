@@ -111,6 +111,76 @@ describe('library test', () => {
     assert.throws(() => Bot.useContext(Component), Error);
   });
 
+  it('context should pass to array', () => {
+    const Component = function({children}) {
+      const setContext = Bot.createContext();
+      setContext({test: 1});
+      return children;
+    };
+
+    const Child1 = function() {};
+
+    const Child2 = function() {
+      const context = Bot.useContext(Component);
+      assert.deepEqual(context, {test: 1});
+    };
+
+    Bot.run(
+      Bot.createComponent(Component, null,
+        Bot.createComponent(Child1, null),
+        Bot.createComponent(Child2, null))
+    );
+  });
+
+  it('context should not be changed in parent component', async () => {
+    function test() {
+      return new Promise((resolve, reject) => {
+        function testAsync() {
+          return new Promise(resolve => {
+            setTimeout(resolve, 1);
+          });
+        }
+
+        const Parent = function ({children}) {
+          const resolve = Bot.useAsync();
+          const setContext = Bot.createContext();
+          return testAsync().then(() => {
+            setContext({parent: true});
+            resolve(children);
+          });
+        };
+
+        const Parent2 = function () {
+          Bot.createContext()({parent2: true});
+        };
+
+        const Child = function () {
+          const parentContext = Bot.useContext(Parent);
+          const parent2Context = Bot.useContext(Parent2);
+          try {
+            assert.deepEqual(parentContext, {parent: true});
+            assert.equal(parent2Context, undefined);
+            resolve();
+          } catch(err) {
+            reject(err);
+          }
+        };
+
+        Bot.run(Bot.createComponent(Bot.Fragment, null,
+          Bot.createComponent(Parent, null,
+            Bot.createComponent(Child, null)),
+          Bot.createComponent(Parent2, null))
+        );
+      });
+    }
+
+    try {
+      await test();
+    } catch(err) {
+      throw new Error(err);
+    }
+  });
+
   it('should return component result', () => {
     const Component = () => 'test';
     const result = Bot.run(Bot.createComponent(Component, null));
