@@ -83,14 +83,32 @@ describe('library test', () => {
   });
 
   it('createContext should create context', () => {
-    const Component = function() {
+    const Component = function({children}) {
       const setContext = Bot.createContext();
       setContext({test: 1});
+      return children;
+    };
+
+    const Child = function() {
+      const context = Bot.useContext(Component);
+      assert.deepEqual(context, {test: 1});
+    };
+
+    Bot.run(
+      Bot.createComponent(Component, null,
+        Bot.createComponent(Child, null))
+    );
+  });
+
+  it('context should not be available outside of component stack', () => {
+    const Component = function({children}) {
+      const setContext = Bot.createContext();
+      setContext({test: 1});
+      return children;
     };
 
     Bot.run(Bot.createComponent(Component, null));
-
-    assert.deepEqual(Bot.useContext(Component), {test: 1});
+    assert.throws(() => Bot.useContext(Component), Error);
   });
 
   it('should return component result', () => {

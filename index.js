@@ -31,14 +31,16 @@ Bot.createContext = function() {
 };
 
 Bot.useContext = function(key) {
+  if (!currentComponent) {
+    throw new Error('useContext should be running inside of component');
+  }
   return currentComponent.context.get(key);
 };
 
 Bot.run = function(component) {
-  if (!component) return;
   let componentResult;
   if (typeof(component) === 'function') {
-    const context = currentComponent.context.get(currentComponent.component);
+    const context = Bot.useContext(currentComponent.component);
     componentResult = component(context);
     return Bot.run(componentResult);
   }
@@ -51,13 +53,17 @@ Bot.run = function(component) {
     }
     return results;
   }
-  if (!component.component) return component;
+  if (!component || !component[isComponent]) {
+    setCurrentComponent(undefined);
+    return component;
+  }
   const prevComponent = currentComponent;
   setCurrentComponent(component);
   validatePropTypes(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
   componentResult = component.component(component.props);
   if (componentResult) return Bot.run(componentResult);
+  setCurrentComponent(undefined);
 };
 
 Bot.createComponent = function(component, props, ...children) {
