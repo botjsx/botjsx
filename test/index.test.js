@@ -208,4 +208,21 @@ describe('library test', () => {
 
     Bot.run(Bot.createComponent(Component, {child: Bot.createComponent(Child, null)}));
   });
+
+  it('should not change current component when children is function', () => {
+    const Component = ({children}) => {
+      const setContext = Bot.createContext();
+      setContext({test: 1});
+      return children;
+    };
+    const Child = () => {
+      const context = Bot.useContext(Component);
+      assert.deepEqual(context, {test: 1});
+    };
+
+    Bot.run(Bot.createComponent(Component, null,
+      () => {},
+      Bot.createComponent(Child, null))
+    );
+  });
 });

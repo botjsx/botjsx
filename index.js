@@ -5,7 +5,9 @@ const isComponent = Symbol('isComponent');
 let currentComponent;
 
 function setCurrentComponent(component) {
-  currentComponent = component;
+  if (!component || component[isComponent]) {
+    currentComponent = component;
+  }
 }
 
 function validatePropTypes(component) {
@@ -27,8 +29,9 @@ function runArray(components) {
   for (let i = 0; i < components.length; i++) {
     const component = components[i];
     if (component === null || component === undefined) continue;
+    const prevComponent = component[isComponent] ? component : currentComponent;
     const result = Bot.run(component);
-    setCurrentComponent(component);
+    setCurrentComponent(prevComponent);
     results.push(result);
   }
   setCurrentComponent(undefined);
