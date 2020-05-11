@@ -1,4 +1,5 @@
-const PropTypes = require('prop-types');
+const isProduction = process.env.NODE_ENV === 'production';
+const PropTypes = isProduction ? undefined : require('prop-types');
 
 const Bot = {};
 const isComponent = Symbol('isComponent');
@@ -72,7 +73,7 @@ Bot.run = function(component) {
   }
   const prevComponent = currentComponent;
   setCurrentComponent(component);
-  validatePropTypes(component);
+  if (!isProduction) validatePropTypes(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
   componentResult = component.component(component.props);
   if (componentResult) return Bot.run(componentResult);

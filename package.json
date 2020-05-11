@@ -1,6 +1,6 @@
 {
   "name": "botjsx",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "test": "mocha test",
+    "test:prod": "cross-env NODE_ENV=production mocha test",
     "release": "npm test && node scripts/release"
   },
   "repository": {
@@ -25,6 +26,7 @@
   },
   "homepage": "https://github.com/botjsx/botjsx#readme",
   "devDependencies": {
+    "cross-env": "^7.0.2",
     "git-url-parse": "^11.1.2",
     "mocha": "^7.1.2",
     "shelljs": "^0.8.4",

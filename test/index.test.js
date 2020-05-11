@@ -188,13 +188,14 @@ describe('library test', () => {
   });
 
   it('validate prop types', () => {
+    const isProduction = process.env.NODE_ENV === 'production';
     sinon.stub(console, 'error');
     const Component = () => {};
     Component.propTypes = {
       someProp: PropTypes.string.isRequired
     };
     Bot.run(Bot.createComponent(Component, null));
-    assert.ok(console.error.called);
+    assert.ok(isProduction ? !console.error.called : console.error.called);
   });
 
   it('useRunner hook should return value', () => {
