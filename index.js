@@ -39,6 +39,21 @@ function runArray(components) {
   return results;
 }
 
+function runComponent(component) {
+  let componentResult;
+  const prevComponent = currentComponent;
+  setCurrentComponent(component);
+  if (!isProduction) validatePropTypes(component);
+  if (prevComponent) currentComponent.context = new Map(prevComponent.context);
+  const useDefaultWrapper = component.component.useDefaultWrapper;
+  const componentFn = useDefaultWrapper === false ? component.component : Bot.defaultWrapper(component.component);
+  componentResult = componentFn(component.props);
+  if (componentResult) {
+    return Bot.run(componentResult);
+  }
+  setCurrentComponent(undefined);
+}
+
 Bot.useRunner = function() {
   const _currentComponent = currentComponent;
   return component => {
@@ -63,26 +78,19 @@ Bot.useContext = function(key) {
 };
 
 Bot.run = function(component) {
-  let componentResult;
-  if (typeof(component) === 'function') {
-    return runFunction(component);
+  if (component) {
+    if (typeof(component) === 'function') {
+      return runFunction(component);
+    }
+    if (Array.isArray(component)) {
+      return runArray(component);
+    }
+    if (component[isComponent]) {
+      return runComponent(component);
+    }
   }
-  if (Array.isArray(component)) {
-    return runArray(component);
-  }
-  if (!component || !component[isComponent]) {
-    setCurrentComponent(undefined);
-    return component;
-  }
-  const prevComponent = currentComponent;
-  setCurrentComponent(component);
-  if (!isProduction) validatePropTypes(component);
-  if (prevComponent) currentComponent.context = new Map(prevComponent.context);
-  const useDefaultWrapper = component.component.useDefaultWrapper;
-  const componentFn = useDefaultWrapper === false ? component.component : Bot.defaultWrapper(component.component);
-  componentResult = componentFn(component.props);
-  if (componentResult) return Bot.run(componentResult);
   setCurrentComponent(undefined);
+  return component;
 };
 
 Bot.createComponent = function(component, props, ...children) {
