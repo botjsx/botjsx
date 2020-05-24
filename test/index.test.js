@@ -3,33 +3,32 @@ const sinon = require('sinon');
 const PropTypes = require('prop-types');
 const Bot = require('../index');
 
-describe('library test', () => {
+describe('general test', () => {
   afterEach(() => {
     // Restore the default sandbox here
     sinon.restore();
   });
 
   it('createComponent should return valid object', () => {
-    const SomeComponent = function() {};
+    const SomeComponent = function () {
+    };
     const component = Bot.createComponent(SomeComponent, {testProp: 'testProp'}, 'children');
-    assert.deepEqual(component, {
-      component: SomeComponent,
-      props: {
-        testProp: 'testProp',
-        children: 'children'
-      },
-      context: component.context
+    assert.ok(typeof component.component === 'function');
+    assert.deepEqual(component.props, {
+      testProp: 'testProp',
+      children: 'children'
     });
   });
 
   it('createComponent should return array of children', () => {
-    const SomeComponent = function() {};
+    const SomeComponent = function () {
+    };
     const component = Bot.createComponent(SomeComponent, {testProp: 'testProp'}, 1, 2);
-    assert.deepEqual(component.props.children, [1,2]);
+    assert.deepEqual(component.props.children, [1, 2]);
   });
 
   it('should run child component', () => {
-    const Parent = function({children}) {
+    const Parent = function ({children}) {
       return children;
     };
 
@@ -44,7 +43,7 @@ describe('library test', () => {
   });
 
   it('should run array of child components', () => {
-    const Parent = function({children}) {
+    const Parent = function ({children}) {
       return children;
     };
 
@@ -70,7 +69,7 @@ describe('library test', () => {
 
     const Child = sinon.spy();
 
-    const Parent = function({children}) {
+    const Parent = function ({children}) {
       const run = Bot.useRunner();
       return testAsync().then(() => run(children));
     };
@@ -81,13 +80,21 @@ describe('library test', () => {
       assert.ok(Child.called);
     });
   });
+});
+
+describe('without default wrapper', () => {
+  afterEach(() => {
+    // Restore the default sandbox here
+    sinon.restore();
+  });
 
   it('createContext should create context', () => {
     const Component = function({children}) {
-      const setContext = Bot.createContext();
+      const [setContext] = Bot.createContext();
       setContext({test: 1});
       return children;
     };
+    Component.useDefaultWrapper = false;
 
     const Child = function() {
       const context = Bot.useContext(Component);
@@ -102,10 +109,11 @@ describe('library test', () => {
 
   it('context should not be available outside of component stack', () => {
     const Component = function({children}) {
-      const setContext = Bot.createContext();
+      const [setContext] = Bot.createContext();
       setContext({test: 1});
       return children;
     };
+    Component.useDefaultWrapper = false;
 
     Bot.run(Bot.createComponent(Component, null));
     assert.throws(() => Bot.useContext(Component), Error);
@@ -113,10 +121,11 @@ describe('library test', () => {
 
   it('context should pass to array', () => {
     const Component = function({children}) {
-      const setContext = Bot.createContext();
+      const [setContext] = Bot.createContext();
       setContext({test: 1});
       return children;
     };
+    Component.useDefaultWrapper = false;
 
     const Child1 = function() {};
 
@@ -141,18 +150,21 @@ describe('library test', () => {
           });
         }
 
-        const Parent = function ({children}) {
+        const Parent = function({children}) {
           const run = Bot.useRunner();
-          const setContext = Bot.createContext();
+          const [setContext] = Bot.createContext();
           return testAsync().then(() => {
             setContext({parent: true});
             run(children);
           });
         };
+        Parent.useDefaultWrapper = false;
 
         const Parent2 = function () {
-          Bot.createContext()({parent2: true});
+          const [setContext] = Bot.createContext();
+          setContext({parent2: true});
         };
+        Parent2.useDefaultWrapper = false;
 
         const Child = function () {
           const parentContext = Bot.useContext(Parent);
@@ -174,11 +186,7 @@ describe('library test', () => {
       });
     }
 
-    try {
-      await test();
-    } catch(err) {
-      throw new Error(err);
-    }
+    await test();
   });
 
   it('should return component result', () => {
@@ -212,10 +220,12 @@ describe('library test', () => {
 
   it('should not change current component when children is function', () => {
     const Component = ({children}) => {
-      const setContext = Bot.createContext();
+      const [setContext] = Bot.createContext();
       setContext({test: 1});
       return children;
     };
+    Component.useDefaultWrapper = false;
+
     const Child = () => {
       const context = Bot.useContext(Component);
       assert.deepEqual(context, {test: 1});
@@ -225,5 +235,140 @@ describe('library test', () => {
       () => {},
       Bot.createComponent(Child, null))
     );
+  });
+});
+
+describe('with default wrapper', () => {
+  afterEach(() => {
+    // Restore the default sandbox here
+    sinon.restore();
+  });
+
+  it('first', () => {
+    function Component() {
+      return 1;
+    }
+    const res = Bot.run(Bot.createComponent(Component));
+    assert.equal(res, 1);
+  });
+
+  it('should call child component', () => {
+    function Parent() {
+      return {
+        ping: 'pong'
+      }
+    }
+
+    const Child = sinon.spy();
+    Bot.run(Bot.createComponent(Parent, null,
+      Bot.createComponent(Child))
+    );
+    assert.ok(Child.called);
+  });
+
+  it('should not call child component', () => {
+    function Parent() {}
+    const Child = sinon.spy();
+    Bot.run(Bot.createComponent(Parent, null,
+      Bot.createComponent(Child))
+    );
+    assert.ok(!Child.called);
+  });
+
+  it('child component should has context from parent', () => {
+    function Parent() {
+      return {
+        ping: 'pong'
+      }
+    }
+
+    function Child() {
+      const context = Bot.useContext(Parent);
+      assert.deepEqual(context, {ping: 'pong'});
+    }
+
+    Bot.run(Bot.createComponent(Parent, null,
+      Bot.createComponent(Child))
+    );
+  });
+
+  it('result should contain result from Child', () => {
+    function Parent() {
+      return {
+        arr: []
+      }
+    }
+
+    function Child() {
+      const context = Bot.useContext(Parent);
+      context.arr.push(1);
+    }
+
+    const res = Bot.run(Bot.createComponent(Parent, null,
+      Bot.createComponent(Child))
+    );
+
+    assert.deepEqual(res, {arr: [1]});
+  });
+
+  it('useRunner should run prop', () => {
+    function Component({anotherComponent}) {
+      const run = Bot.useRunner();
+      return {
+        res: run(anotherComponent)
+      }
+    }
+
+    function AnotherComponent() {
+      return 'test';
+    }
+
+    const res = Bot.run(Bot.createComponent(Component, {anotherComponent: Bot.createComponent(AnotherComponent)}));
+    assert.deepEqual(res, {res: 'test'});
+  });
+
+  it('async: should return async result', async () => {
+    async function test() {
+      function asyncFn() {
+        return new Promise(resolve => {
+          setTimeout(resolve, 1);
+        });
+      }
+
+      async function Component() {
+        await asyncFn();
+        return 1;
+      }
+
+      const res = await Bot.run(Bot.createComponent(Component));
+      assert.deepEqual(res, 1);
+    }
+
+    await test();
+  });
+
+  it('async: should pass context to child', async () => {
+    async function test() {
+      function asyncFn() {
+        return new Promise(resolve => {
+          setTimeout(resolve, 1);
+        });
+      }
+
+      async function Component() {
+        await asyncFn();
+        return {test: 1};
+      }
+
+      function Child() {
+        const context = Bot.useContext(Component);
+        assert.deepEqual(context, {test: 1});
+      }
+
+      Bot.run(Bot.createComponent(Component, null,
+        Bot.createComponent(Child)));
+    }
+
+    await test();
   });
 });
