@@ -94,7 +94,6 @@ describe('without default wrapper', () => {
       setContext({test: 1});
       return children;
     };
-    Component.useDefaultWrapper = false;
 
     const Child = function() {
       const context = Bot.useContext(Component);
@@ -113,7 +112,6 @@ describe('without default wrapper', () => {
       setContext({test: 1});
       return children;
     };
-    Component.useDefaultWrapper = false;
 
     Bot.run(Bot.createComponent(Component, null));
     assert.throws(() => Bot.useContext(Component), Error);
@@ -125,7 +123,6 @@ describe('without default wrapper', () => {
       setContext({test: 1});
       return children;
     };
-    Component.useDefaultWrapper = false;
 
     const Child1 = function() {};
 
@@ -158,13 +155,11 @@ describe('without default wrapper', () => {
             run(children);
           });
         };
-        Parent.useDefaultWrapper = false;
 
         const Parent2 = function () {
           const [setContext] = Bot.createContext();
           setContext({parent2: true});
         };
-        Parent2.useDefaultWrapper = false;
 
         const Child = function () {
           const parentContext = Bot.useContext(Parent);
@@ -224,7 +219,6 @@ describe('without default wrapper', () => {
       setContext({test: 1});
       return children;
     };
-    Component.useDefaultWrapper = false;
 
     const Child = () => {
       const context = Bot.useContext(Component);
@@ -236,30 +230,44 @@ describe('without default wrapper', () => {
       Bot.createComponent(Child, null))
     );
   });
+
+  it('composition', () => {
+    const Component = () => {
+      return 'test';
+    };
+
+    const Component2 = () => {
+      return Bot.createComponent(Component);
+    };
+
+    const res = Bot.run(Bot.createComponent(Component2));
+    assert.equal(res, 'test');
+  });
 });
 
-describe('with default wrapper', () => {
+describe('createContext wrapper', () => {
   afterEach(() => {
     // Restore the default sandbox here
     sinon.restore();
   });
 
   it('first', () => {
-    function Component() {
+    const Component = Bot.createContext(() => {
       return 1;
-    }
+    });
     const res = Bot.run(Bot.createComponent(Component));
     assert.equal(res, 1);
   });
 
   it('should call child component', () => {
-    function Parent() {
+    const Parent = Bot.createContext(() => {
       return {
         ping: 'pong'
       }
-    }
+    });
 
     const Child = sinon.spy();
+
     Bot.run(Bot.createComponent(Parent, null,
       Bot.createComponent(Child))
     );
@@ -267,7 +275,7 @@ describe('with default wrapper', () => {
   });
 
   it('should not call child component', () => {
-    function Parent() {}
+    const Parent = Bot.createContext(() => {});
     const Child = sinon.spy();
     Bot.run(Bot.createComponent(Parent, null,
       Bot.createComponent(Child))
@@ -276,11 +284,11 @@ describe('with default wrapper', () => {
   });
 
   it('child component should has context from parent', () => {
-    function Parent() {
+    const Parent = Bot.createContext(() => {
       return {
         ping: 'pong'
       }
-    }
+    });
 
     function Child() {
       const context = Bot.useContext(Parent);
@@ -293,11 +301,11 @@ describe('with default wrapper', () => {
   });
 
   it('result should contain result from Child', () => {
-    function Parent() {
+    const Parent = Bot.createContext(() => {
       return {
         arr: []
       }
-    }
+    });
 
     function Child() {
       const context = Bot.useContext(Parent);
@@ -312,12 +320,12 @@ describe('with default wrapper', () => {
   });
 
   it('useRunner should run prop', () => {
-    function Component({anotherComponent}) {
+    const Component = Bot.createContext(({anotherComponent}) => {
       const run = Bot.useRunner();
       return {
         res: run(anotherComponent)
       }
-    }
+    });
 
     function AnotherComponent() {
       return 'test';
@@ -335,10 +343,10 @@ describe('with default wrapper', () => {
         });
       }
 
-      async function Component() {
+      const Component = Bot.createContext(async function() {
         await asyncFn();
         return 1;
-      }
+      });
 
       const res = await Bot.run(Bot.createComponent(Component));
       assert.deepEqual(res, 1);
@@ -349,24 +357,27 @@ describe('with default wrapper', () => {
 
   it('async: should pass context to child', async () => {
     async function test() {
+      let childIsRun = false;
       function asyncFn() {
         return new Promise(resolve => {
           setTimeout(resolve, 1);
         });
       }
 
-      async function Component() {
+      const Component = Bot.createContext(async function() {
         await asyncFn();
         return {test: 1};
-      }
+      });
 
       function Child() {
         const context = Bot.useContext(Component);
+        childIsRun = true;
         assert.deepEqual(context, {test: 1});
       }
 
-      Bot.run(Bot.createComponent(Component, null,
+      await Bot.run(Bot.createComponent(Component, null,
         Bot.createComponent(Child)));
+      assert.ok(childIsRun);
     }
 
     await test();

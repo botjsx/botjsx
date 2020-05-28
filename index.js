@@ -45,14 +45,50 @@ function runComponent(component) {
   setCurrentComponent(component);
   if (!isProduction) validatePropTypes(component);
   if (prevComponent) currentComponent.context = new Map(prevComponent.context);
-  const useDefaultWrapper = component.component.useDefaultWrapper;
-  const componentFn = useDefaultWrapper === false ? component.component : Bot.defaultWrapper(component.component);
+  const componentFn = component.component;
   componentResult = componentFn(component.props);
   if (componentResult) {
     return Bot.run(componentResult);
   }
   setCurrentComponent(undefined);
 }
+
+function createContextWrapper(component) {
+  return function(props) {
+    const run = Bot.useRunner();
+    const [setContext, removeContext] = Bot.createContext();
+
+    const res = component(props);
+
+    function handleResult(res) {
+      if (res && props.children) {
+        if (props.children !== res) {
+          setContext(res);
+        } else {
+          removeContext()
+        }
+        run(props.children);
+      }
+    }
+
+    // res is Promise
+    if (res && typeof res.then === 'function') {
+      return new Promise((resolve) => {
+        res.then(res => {
+          handleResult(res);
+          removeContext();
+          resolve(res);
+        });
+      });
+    } else {
+      handleResult(res);
+    }
+
+    removeContext();
+    return res;
+  }
+};
+
 
 Bot.useRunner = function() {
   const _currentComponent = currentComponent;
@@ -62,7 +98,11 @@ Bot.useRunner = function() {
   };
 };
 
-Bot.createContext = function() {
+Bot.createContext = function(fn) {
+  if (fn && typeof fn === 'function') {
+    return createContextWrapper(fn);
+  }
+
   const _currentComponent = currentComponent;
   return [
     context => _currentComponent.context.set(_currentComponent.component, context),
@@ -111,43 +151,6 @@ Bot.createComponent = function(component, props, ...children) {
 function Fragment({children}) {
   return children;
 }
-Fragment.useDefaultWrapper = false;
 Bot.Fragment = Fragment;
-
-Bot.defaultWrapper = function(component) {
-  return function(props) {
-    const run = Bot.useRunner();
-    const [setContext, removeContext] = Bot.createContext();
-
-    const res = component(props);
-
-    function handleResult(res) {
-      if (res && props.children) {
-        if (props.children !== res) {
-          setContext(res);
-        } else {
-          removeContext()
-        }
-        run(props.children);
-      }
-    }
-
-    // res is Promise
-    if (res && typeof res.then === 'function') {
-      return new Promise((resolve) => {
-        res.then(res => {
-          handleResult(res);
-          removeContext();
-          resolve(res);
-        });
-      });
-    } else {
-      handleResult(res);
-    }
-
-    removeContext();
-    return res;
-  }
-};
 
 module.exports = Object.freeze(Bot);
