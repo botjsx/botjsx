@@ -156,10 +156,9 @@ describe('general test', () => {
 
         const Child = function () {
           const parentContext = Bot.useContext(Parent);
-          const parent2Context = Bot.useContext(Parent2);
           try {
             assert.deepEqual(parentContext, {parent: true});
-            assert.equal(parent2Context, undefined);
+            assert.throws(() => Bot.useContext(Parent2), Error);
             resolve();
           } catch(err) {
             reject(err);
@@ -235,5 +234,14 @@ describe('general test', () => {
 
     const res = Bot.run(Bot.createComponent(Component2));
     assert.equal(res, 'test');
+  });
+
+  it('useContext throw error when no context', () => {
+    const F = () => {};
+    const Component = () => {
+      Bot.useContext(F);
+    };
+
+    assert.throws(() => Bot.run(Bot.createComponent(Component, null)), Error);
   });
 });

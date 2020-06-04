@@ -105,6 +105,9 @@ Bot.useContext = function(key) {
   if (!currentComponent) {
     throw new Error('useContext should be running inside of component');
   }
+  if (!currentComponent.context.has(key)) {
+    throw new Error(`${currentComponent.component.name} requires ${key.name}`);
+  }
   return currentComponent.context.get(key);
 };
 
