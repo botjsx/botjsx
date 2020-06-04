@@ -1,6 +1,6 @@
 {
   "name": "botjsx",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -27,6 +27,7 @@
   "homepage": "https://github.com/botjsx/botjsx#readme",
   "devDependencies": {
     "cross-env": "^7.0.2",
+    "express": "^4.17.1",
     "git-url-parse": "^11.1.2",
     "mocha": "^7.1.2",
     "shelljs": "^0.8.4",

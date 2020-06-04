@@ -56,7 +56,7 @@ function runComponent(component) {
 function createContextWrapper(component) {
   return function(props) {
     const run = Bot.useRunner();
-    const [setContext, removeContext] = Bot.createContext();
+    const setContext = Bot.createContext();
 
     const res = component(props);
 
@@ -64,8 +64,6 @@ function createContextWrapper(component) {
       if (res && props.children) {
         if (props.children !== res) {
           setContext(res);
-        } else {
-          removeContext()
         }
         run(props.children);
       }
@@ -76,7 +74,6 @@ function createContextWrapper(component) {
       return new Promise((resolve) => {
         res.then(res => {
           handleResult(res);
-          removeContext();
           resolve(res);
         });
       });
@@ -84,11 +81,9 @@ function createContextWrapper(component) {
       handleResult(res);
     }
 
-    removeContext();
     return res;
   }
-};
-
+}
 
 Bot.useRunner = function() {
   const _currentComponent = currentComponent;
@@ -104,11 +99,7 @@ Bot.createContext = function(fn) {
   }
 
   const _currentComponent = currentComponent;
-  return [
-    context => _currentComponent.context.set(_currentComponent.component, context),
-    () => _currentComponent.context.delete(_currentComponent.component)
-  ]
-};
+  return context => _currentComponent.context.set(_currentComponent.component, context)};
 
 Bot.useContext = function(key) {
   if (!currentComponent) {
