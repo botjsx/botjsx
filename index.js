@@ -44,7 +44,11 @@ function runComponent(component) {
   const prevComponent = currentComponent;
   setCurrentComponent(component);
   if (!isProduction) validatePropTypes(component);
-  if (prevComponent) currentComponent.context = new Map(prevComponent.context);
+  if (prevComponent) {
+    currentComponent.context = new Map(prevComponent.context);
+  } else {
+    currentComponent.context = new Map();
+  }
   const componentFn = component.component;
   componentResult = componentFn(component.props);
   if (componentResult) {
@@ -99,7 +103,8 @@ Bot.createContext = function(fn) {
   }
 
   const _currentComponent = currentComponent;
-  return context => _currentComponent.context.set(_currentComponent.component, context)};
+  return context => _currentComponent.context.set(_currentComponent.component, context)
+};
 
 Bot.useContext = function(key) {
   if (!currentComponent) {
@@ -127,7 +132,7 @@ Bot.run = function(component) {
   return component;
 };
 
-Bot.createComponent = function(component, props, ...children) {
+Bot.createComponent = Bot.h = function(component, props, ...children) {
   if (!component) throw new Error('component is not defined');
   if (!props) props = {};
   if (children.length) {
@@ -137,8 +142,7 @@ Bot.createComponent = function(component, props, ...children) {
   return {
     [isComponent]: true,
     component,
-    props,
-    context: new Map()
+    props
   };
 };
 
